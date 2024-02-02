@@ -17,26 +17,39 @@ const Login = () => {
   const [regNo, setRegNo] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
-  const [wrongRegNo, setWrongRegNo] = React.useState(false);
-  const [wrongPassword, setWrongPassword] = React.useState(false);
+  // const [wrongRegNo, setWrongRegNo] = React.useState(false);
+  // const [wrongPassword, setWrongPassword] = React.useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleLogin = () => {
-    if (regNo === "12345678" && password === "password") {
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = {
+        regNo: regNo,
+        password: password,
+      };
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API_URL}/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!response.ok) {
+        console.log(JSON.stringify(formData));
+        alert("Failed to Log in! Please try again.");
+        throw new Error("Failed to submit form");
+      }
+      console.log("Form submitted successfully");
       dispatch(authActions.login());
       navigate("/dashboard");
-    } else {
-      if (regNo != "12345678") {
-        setWrongRegNo(true);
-      } else {
-        setWrongRegNo(false);
-      }
-      if (password != "password") {
-        setWrongPassword(true);
-      } else {
-        setWrongPassword(false);
-      }
+    } catch (error) {
+      console.error("Error logging user in: ", error.message);
     }
   };
 
@@ -135,7 +148,7 @@ const Login = () => {
                 }}
                 sx={{ width: "100%" }}
               />
-              <Typography
+              {/* <Typography
                 variant="body2"
                 sx={{
                   color: "red",
@@ -143,7 +156,7 @@ const Login = () => {
                 }}
               >
                 Wrong registration number inputed
-              </Typography>
+              </Typography> */}
 
               <InputLabel
                 htmlFor="password"
@@ -188,7 +201,7 @@ const Login = () => {
                   ),
                 }}
               />
-              <Typography
+              {/* <Typography
                 variant="body2"
                 sx={{
                   color: "red",
@@ -196,7 +209,7 @@ const Login = () => {
                 }}
               >
                 Wrong password inputed
-              </Typography>
+              </Typography> */}
 
               <Box
                 sx={{

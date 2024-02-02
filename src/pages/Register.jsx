@@ -17,20 +17,82 @@ import { useDispatch } from "react-redux";
 import { authActions } from "../store/auth-slice";
 
 const Register = () => {
-  const [fullname, setFullname] = React.useState("");
-  const [regNo, setRegNo] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [phone, setPhone] = React.useState("");
-  const [email, setEmail] = React.useState("");
   const [callCode, setCallCode] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
+  const [phone, setPhone] = React.useState("");
+  const [formData, setFormData] = React.useState({
+    fullname: { value: "", isValid: true, errorText: "Fullname is required" },
+    regNo: {
+      value: "",
+      isValid: true,
+      errorText: "Registration Number is required",
+    },
+    password: { value: "", isValid: true, errorText: "Password is required" },
+    email: { value: "", isValid: true, errorText: "Email is required" },
+  });
+
+  const handleChange = (event) => {
+    setFormData((prev) => ({
+      ...prev,
+      [event.target.name]: {
+        ...prev[event.target.name],
+        value: event.target.value,
+        isValid: event.target.value == "" ? false : true,
+      },
+    }));
+  };
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleRegistration = () => {
-    dispatch(authActions.registered());
-    navigate("/dashboard");
+  const handleRegistration = async (e) => {
+    e.preventDefault();
+    let isFormValid = [];
+    for (let key in formData) {
+      if (formData[key].value == "") {
+        isFormValid.push(false);
+      } else isFormValid.push(formData[key].isValid);
+    }
+
+    setFormData((prev) => {
+      let newObject = {};
+      for (let field in prev) {
+        newObject[field] = {
+          ...prev[field],
+          isValid: prev[field].value == "" ? false : true,
+        };
+      }
+      return newObject;
+    });
+    console.log(isFormValid);
+    if (isFormValid.includes(false))
+      return alert("Please fill out all required fields");
+    else {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_API_URL}/create_user`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+          }
+        );
+
+        if (!response.ok) {
+          console.log(JSON.stringify(formData));
+          alert("Failed to Register User");
+          throw new Error("Failed to submit form");
+        }
+        dispatch(authActions.registered());
+        navigate("/dashboard");
+
+        console.log("Form submitted successfully");
+      } catch (error) {
+        console.error("Error submitting form: ", error.message);
+      }
+    }
   };
 
   return (
@@ -105,6 +167,7 @@ const Register = () => {
                 Already an existing user? Login
               </Link>
               <InputLabel
+                required
                 htmlFor="fullname"
                 sx={{
                   color: "#4A4A4A",
@@ -117,18 +180,23 @@ const Register = () => {
                 Your fullname
               </InputLabel>
               <TextField
+                error={!formData.fullname.isValid}
+                helperText={
+                  !formData.fullname.isValid ? formData.fullname.errorText : ""
+                }
                 required
                 id="fullname"
                 label="Name"
                 type="text"
-                value={fullname}
-                onChange={(event) => {
-                  setFullname(event.target.value);
-                }}
+                value={formData.fullname.value}
+                name="fullname"
+                onChange={handleChange}
+                onBlur={handleChange}
                 sx={{ width: "100%" }}
               />
 
               <InputLabel
+                required
                 htmlFor="regNo"
                 sx={{
                   color: "#4A4A4A",
@@ -141,18 +209,23 @@ const Register = () => {
                 Registration Number
               </InputLabel>
               <TextField
+                error={!formData.regNo.isValid}
+                helperText={
+                  !formData.regNo.isValid ? formData.regNo.errorText : ""
+                }
                 required
                 id="regNo"
                 label="Enter your registration number"
                 type="text"
-                value={regNo}
-                onChange={(event) => {
-                  setRegNo(event.target.value);
-                }}
+                name="regNo"
+                value={formData.regNo.value}
+                onChange={handleChange}
+                onBlur={handleChange}
                 sx={{ width: "100%" }}
               />
 
               <InputLabel
+                required
                 htmlFor="password"
                 sx={{
                   color: "#4A4A4A",
@@ -166,13 +239,17 @@ const Register = () => {
               </InputLabel>
               <TextField
                 required
+                error={!formData.password.isValid}
+                helperText={
+                  !formData.password.isValid ? formData.password.errorText : ""
+                }
                 id="password"
                 label="Enter password"
                 type={showPassword === false ? "password" : "true"}
-                value={password}
-                onChange={(event) => {
-                  setPassword(event.target.value);
-                }}
+                name="password"
+                value={formData.password.value}
+                onChange={handleChange}
+                onBlur={handleChange}
                 sx={{ width: "100%" }}
                 InputProps={{
                   endAdornment: (
@@ -211,6 +288,7 @@ const Register = () => {
               <TextField
                 id="phone"
                 type="text"
+                name="phone"
                 value={phone}
                 onChange={(event) => {
                   setPhone(event.target.value);
@@ -244,6 +322,7 @@ const Register = () => {
               />
 
               <InputLabel
+                required
                 htmlFor="email"
                 sx={{
                   color: "#4A4A4A",
@@ -256,13 +335,18 @@ const Register = () => {
                 Your E-mail
               </InputLabel>
               <TextField
+                required
+                error={!formData.email.isValid}
+                helperText={
+                  !formData.email.isValid ? formData.email.errorText : ""
+                }
                 id="email"
                 label="Enter email"
                 type="email"
-                value={email}
-                onChange={(event) => {
-                  setEmail(event.target.value);
-                }}
+                name="email"
+                value={formData.email.value}
+                onChange={handleChange}
+                onBlur={handleChange}
                 sx={{ width: "100%" }}
               />
               <Button

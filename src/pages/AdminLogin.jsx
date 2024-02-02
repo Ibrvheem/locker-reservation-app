@@ -17,26 +17,39 @@ const AdminLogin = () => {
   const [staffId, setStaffId] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
-  const [wrongStaffId, setWrongStaffId] = React.useState(false);
-  const [wrongPassword, setWrongPassword] = React.useState(false);
+  // const [wrongStaffId, setWrongStaffId] = React.useState(false);
+  // const [wrongPassword, setWrongPassword] = React.useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleLogin = () => {
-    if (staffId === "12345678" && password === "password") {
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = {
+        staffId: staffId,
+        password: password,
+      };
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API_URL}/admin_login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!response.ok) {
+        console.log(JSON.stringify(formData));
+        alert("Failed to Log in! Please try again.");
+        throw new Error("Failed to submit form");
+      }
+      console.log("Form submitted successfully");
       dispatch(authActions.loginAdmin());
       navigate("/admin");
-    } else {
-      if (staffId != "12345678") {
-        setWrongStaffId(true);
-      } else {
-        setWrongStaffId(false);
-      }
-      if (password != "password") {
-        setWrongPassword(true);
-      } else {
-        setWrongPassword(false);
-      }
+    } catch (error) {
+      console.error("Error logging user in: ", error.message);
     }
   };
 
@@ -135,7 +148,7 @@ const AdminLogin = () => {
                 }}
                 sx={{ width: "100%" }}
               />
-              <Typography
+              {/* <Typography
                 variant="body2"
                 sx={{
                   color: "red",
@@ -143,7 +156,7 @@ const AdminLogin = () => {
                 }}
               >
                 Wrong staff ID inputed
-              </Typography>
+              </Typography> */}
 
               <InputLabel
                 htmlFor="password"
@@ -188,7 +201,7 @@ const AdminLogin = () => {
                   ),
                 }}
               />
-              <Typography
+              {/* <Typography
                 variant="body2"
                 sx={{
                   color: "red",
@@ -196,7 +209,7 @@ const AdminLogin = () => {
                 }}
               >
                 Wrong password inputed
-              </Typography>
+              </Typography> */}
               <Box
                 sx={{
                   marginTop: "2em",
