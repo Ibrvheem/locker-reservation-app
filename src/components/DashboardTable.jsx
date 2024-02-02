@@ -10,11 +10,12 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 const DashboardTable = () => {
   const [open, setOpen] = React.useState(false);
+  const [lockerCodes, setLockerCodes] = React.useState([]);
   // const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const handleReservation = (lockerCode, id) => {
@@ -24,6 +25,30 @@ const DashboardTable = () => {
     );
   };
   const location = useLocation();
+
+  useEffect(() => {
+    const lockerCodes = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_API_URL}/lockers`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error("failed to fetch lockers");
+        }
+        const lockers = await response.json();
+        setLockerCodes(lockers);
+      } catch (error) {
+        console.error("Error fetching lockers: ", error);
+      }
+    };
+    lockerCodes();
+  }, []);
 
   return (
     <Box>
@@ -48,7 +73,7 @@ const DashboardTable = () => {
             Available Lockers
           </Typography>
           <Box sx={{ marginTop: "2em" }}>
-            {availableLockers.map((item) => (
+            {lockerCodes.map((item) => (
               <Box
                 sx={{
                   display: "flex",
@@ -63,11 +88,11 @@ const DashboardTable = () => {
                   variant="body2"
                   sx={{ fontSize: "1.29206rem", fontWeight: "600" }}
                 >
-                  {parseInt(item.lockerCode)}
+                  {parseInt(item.code)}
                 </Typography>
                 <Button
                   onClick={() =>
-                    handleReservation(parseInt(item.lockerCode), item.id)
+                    handleReservation(parseInt(item.code), item.id)
                   }
                   sx={{
                     backgroundColor: "#041526",
@@ -148,7 +173,7 @@ const DashboardTable = () => {
                         margin: "2em 0",
                       }}
                     >
-                      65543890B
+                      {item.reservation_id}
                     </Typography>
                     <Button
                       onClick={handleClose}
@@ -263,36 +288,36 @@ const DashboardTable = () => {
   );
 };
 
-const availableLockers = [
-  {
-    id: 1,
-    lockerCode: "016",
-  },
-  {
-    id: 2,
-    lockerCode: "016",
-  },
-  {
-    id: 3,
-    lockerCode: "016",
-  },
-  {
-    id: 4,
-    lockerCode: "016",
-  },
-  {
-    id: 5,
-    lockerCode: "016",
-  },
-  {
-    id: 6,
-    lockerCode: "016",
-  },
-  {
-    id: 7,
-    lockerCode: "016",
-  },
-];
+// const availableLockers = [
+//   {
+//     id: 1,
+//     lockerCode: "016",
+//   },
+//   {
+//     id: 2,
+//     lockerCode: "016",
+//   },
+//   {
+//     id: 3,
+//     lockerCode: "016",
+//   },
+//   {
+//     id: 4,
+//     lockerCode: "016",
+//   },
+//   {
+//     id: 5,
+//     lockerCode: "016",
+//   },
+//   {
+//     id: 6,
+//     lockerCode: "016",
+//   },
+//   {
+//     id: 7,
+//     lockerCode: "016",
+//   },
+// ];
 
 const rows = [
   {
