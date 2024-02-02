@@ -27,7 +27,7 @@ const DashboardTable = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const lockerCodes = async () => {
+    const getLockerCodes = async () => {
       try {
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_API_URL}/lockers`,
@@ -47,7 +47,7 @@ const DashboardTable = () => {
         console.error("Error fetching lockers: ", error);
       }
     };
-    lockerCodes();
+    getLockerCodes();
   }, []);
 
   return (
@@ -88,12 +88,10 @@ const DashboardTable = () => {
                   variant="body2"
                   sx={{ fontSize: "1.29206rem", fontWeight: "600" }}
                 >
-                  {parseInt(item.code)}
+                  {item.code}
                 </Typography>
                 <Button
-                  onClick={() =>
-                    handleReservation(parseInt(item.code), item.id)
-                  }
+                  onClick={() => handleReservation(item.code, item.id)}
                   sx={{
                     backgroundColor: "#041526",
                     color: "#FFFFFF",
@@ -243,7 +241,7 @@ const DashboardTable = () => {
                       }}
                     >
                       <TableCell sx={{ fontSize: "1rem", fontWeight: 400 }}>
-                        {parseInt(row.lockerCode)}
+                        {row.lockerCode}
                       </TableCell>
                       <TableCell
                         sx={{
@@ -287,37 +285,6 @@ const DashboardTable = () => {
     </Box>
   );
 };
-
-// const availableLockers = [
-//   {
-//     id: 1,
-//     lockerCode: "016",
-//   },
-//   {
-//     id: 2,
-//     lockerCode: "016",
-//   },
-//   {
-//     id: 3,
-//     lockerCode: "016",
-//   },
-//   {
-//     id: 4,
-//     lockerCode: "016",
-//   },
-//   {
-//     id: 5,
-//     lockerCode: "016",
-//   },
-//   {
-//     id: 6,
-//     lockerCode: "016",
-//   },
-//   {
-//     id: 7,
-//     lockerCode: "016",
-//   },
-// ];
 
 const rows = [
   {

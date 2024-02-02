@@ -15,7 +15,7 @@ import {
 import SideHeader from "../components/SideHeader";
 import { ArrowBackIos } from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router-dom";
-import React from "react";
+import React, { useEffect } from "react";
 
 const PendingReservations = () => {
   const [open, setOpen] = React.useState(false);
@@ -29,7 +29,32 @@ const PendingReservations = () => {
   };
   const navigate = useNavigate();
   const location = useLocation();
+  const [lockerCodes, setLockerCodes] = React.useState([]);
   const [searchQuery, setSearchQuery] = React.useState("");
+
+  useEffect(() => {
+    const getLockerCodes = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_API_URL}/lockers`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error("failed to fetch lockers");
+        }
+        const lockers = await response.json();
+        setLockerCodes(lockers);
+      } catch (error) {
+        console.error("Error fetching lockers: ", error);
+      }
+    };
+    getLockerCodes();
+  }, []);
 
   // Function to handle search query change
   const handleSearchChange = (event) => {
@@ -37,13 +62,13 @@ const PendingReservations = () => {
   };
 
   const getSearchedItems = () => {
-    const filteredItems = rows.filter((item) =>
-      item.lockerCode.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredItems = lockerCodes.filter((item) =>
+      item.code.toLowerCase().includes(searchQuery.toLowerCase())
     );
     const rearrangedItems = filteredItems.sort(
       (a, b) =>
-        a.lockerCode.toLowerCase().indexOf(searchQuery.toLowerCase()) -
-        b.lockerCode.toLowerCase().indexOf(searchQuery.toLowerCase())
+        a.code.toLowerCase().indexOf(searchQuery.toLowerCase()) -
+        b.code.toLowerCase().indexOf(searchQuery.toLowerCase())
     );
     return rearrangedItems;
   };
@@ -92,7 +117,7 @@ const PendingReservations = () => {
               sx={{ borderRadius: "50px", width: "50%" }}
               freeSolo
               disableClearable
-              options={rows.map((item) => item.lockerCode)}
+              options={lockerCodes.map((item) => item.code)}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -174,7 +199,7 @@ const PendingReservations = () => {
                           textAlign: "center",
                         }}
                       >
-                        {parseInt(item.lockerCode)}
+                        {item.code}
                       </TableCell>
                       <TableCell
                         sx={{
@@ -184,7 +209,7 @@ const PendingReservations = () => {
                           textAlign: "center",
                         }}
                       >
-                        {item.reservationId}
+                        {item.reservation_id}
                       </TableCell>
                       <TableCell
                         sx={{
@@ -194,12 +219,7 @@ const PendingReservations = () => {
                         }}
                       >
                         <Button
-                          onClick={() =>
-                            handleReservation(
-                              parseInt(item.lockerCode),
-                              item.id
-                            )
-                          }
+                          onClick={() => handleReservation(item.code, item.id)}
                           sx={{
                             backgroundColor:
                               location.pathname === "/pending"
@@ -286,7 +306,7 @@ const PendingReservations = () => {
                                 margin: "2em 0",
                               }}
                             >
-                              65543890B
+                              {item.reservation_id}
                             </Typography>
                             <Button
                               onClick={handleClose}
@@ -318,48 +338,5 @@ const PendingReservations = () => {
     </SideHeader>
   );
 };
-
-const rows = [
-  {
-    id: 1,
-    lockerCode: "096",
-    reservationId: "65543895X",
-  },
-  {
-    id: 2,
-    lockerCode: "097",
-    reservationId: "65543895X",
-  },
-  {
-    id: 3,
-    lockerCode: "098",
-    reservationId: "65543895X",
-  },
-  {
-    id: 4,
-    lockerCode: "099",
-    reservationId: "65543895X",
-  },
-  {
-    id: 5,
-    lockerCode: "086",
-    reservationId: "65543895X",
-  },
-  {
-    id: 6,
-    lockerCode: "087",
-    reservationId: "65543895X",
-  },
-  {
-    id: 7,
-    lockerCode: "088",
-    reservationId: "65543895X",
-  },
-  {
-    id: 8,
-    lockerCode: "089",
-    reservationId: "65543895X",
-  },
-];
 
 export default PendingReservations;
