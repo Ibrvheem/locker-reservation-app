@@ -68,6 +68,13 @@ const Register = () => {
     if (isFormValid.includes(false))
       return alert("Please fill out all required fields");
     else {
+      const regData = {
+        fullname: formData.fullname.value,
+        regNo: formData.regNo.value,
+        password: formData.password.value,
+        email: formData.email.value,
+        phone: phone,
+      };
       try {
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_API_URL}/create_user`,
@@ -76,12 +83,12 @@ const Register = () => {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(formData),
+            body: JSON.stringify(regData),
           }
         );
 
         if (!response.ok) {
-          console.log(JSON.stringify(formData));
+          console.log(JSON.stringify(regData));
           alert("Failed to Register User");
           throw new Error("Failed to submit form");
         }
