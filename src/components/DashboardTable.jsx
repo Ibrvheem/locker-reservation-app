@@ -239,7 +239,7 @@ const DashboardTable = () => {
                       }}
                     >
                       <TableCell sx={{ fontSize: "1rem", fontWeight: 400 }}>
-                        {row.code}
+                        {row.locker_id.toString().padStart(3, "0")}
                       </TableCell>
                       <TableCell
                         sx={{
