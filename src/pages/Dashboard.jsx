@@ -1,8 +1,11 @@
 import { Box, Typography } from "@mui/material";
 import SideHeader from "../components/SideHeader";
 import DashboardTable from "../components/DashboardTable";
+import { useSelector } from "react-redux";
 
 const Dashboard = () => {
+  const user = useSelector((state) => state.auth.user);
+
   return (
     <SideHeader>
       <Box
@@ -20,9 +23,10 @@ const Dashboard = () => {
               fontSize: "1.75rem",
               fontWeight: 700,
               margin: "1em 0",
+              textTransform: "capitalize",
             }}
           >
-            Hello Ibrahim!
+            Hello {user.fullname.split(" ")[0]}
           </Typography>
           <DashboardTable />
         </Box>

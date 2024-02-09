@@ -9,6 +9,8 @@ import Dashboard from "../pages/Dashboard";
 import AdminDashboard from "../pages/AdminDashboard";
 import PendingReservations from "../pages/PendingReservations";
 import ReservedLockers from "../pages/ReservedLockers";
+import Auth from "./Auth";
+import UserAuth from "./UserAuth";
 
 const Layout = () => {
   return (
@@ -18,11 +20,46 @@ const Layout = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/pending" element={<PendingReservations />} />
-        <Route path="/reserved" element={<ReservedLockers />} />
-        <Route path="/edit-profile" element={<EditProfile />} />
+        <Route
+          path="/dashboard"
+          element={
+            <UserAuth>
+              <Dashboard />
+            </UserAuth>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <Auth>
+              <AdminDashboard />
+            </Auth>
+          }
+        />
+        <Route
+          path="/pending"
+          element={
+            <Auth>
+              <PendingReservations />
+            </Auth>
+          }
+        />
+        <Route
+          path="/reserved"
+          element={
+            <Auth>
+              <ReservedLockers />
+            </Auth>
+          }
+        />
+        <Route
+          path="/edit-profile"
+          element={
+            <Auth>
+              <EditProfile />
+            </Auth>
+          }
+        />
       </Routes>
     </Box>
   );

@@ -29,24 +29,28 @@ const DashboardTable = () => {
   useEffect(() => {
     const getLockerCodes = async () => {
       try {
+        // console.log(`${import.meta.env.VITE_BACKEND_API_URL}/reservations`);
         const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_API_URL}/lockers`,
+          `${import.meta.env.VITE_BACKEND_API_URL}/reservations`,
           {
             method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
           }
         );
+        console.log(await response.json());
         if (!response.ok) {
           throw new Error("failed to fetch lockers");
         }
         const lockers = await response.json();
-        setLockerCodes(lockers);
+        setLockerCodes(lockers.data);
       } catch (error) {
         console.error("Error fetching lockers: ", error);
       }
+      // const response = await fetch(
+      //   `${import.meta.env.VITE_BACKEND_API_URL}/reservations`
+      // );
+      // console.log(await response.json());
     };
+
     getLockerCodes();
   }, []);
 
@@ -88,10 +92,10 @@ const DashboardTable = () => {
                   variant="body2"
                   sx={{ fontSize: "1.29206rem", fontWeight: "600" }}
                 >
-                  {item.code}
+                  {item.locker_id.toString().padStart(3, "0")}
                 </Typography>
                 <Button
-                  onClick={() => handleReservation(item.code, item.id)}
+                  onClick={() => handleReservation(item.locker_id, item.id)}
                   sx={{
                     backgroundColor: "#041526",
                     color: "#FFFFFF",
@@ -233,7 +237,7 @@ const DashboardTable = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows.map((row) => (
+                  {lockerCodes.map((row) => (
                     <TableRow
                       key={row.id}
                       sx={{
@@ -241,7 +245,7 @@ const DashboardTable = () => {
                       }}
                     >
                       <TableCell sx={{ fontSize: "1rem", fontWeight: 400 }}>
-                        {row.lockerCode}
+                        {row.code}
                       </TableCell>
                       <TableCell
                         sx={{
@@ -255,10 +259,14 @@ const DashboardTable = () => {
                               : "#DE6944",
                         }}
                       >
-                        {row.timeLeft}
+                        {new Date(row.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                        })}
                       </TableCell>
                       <TableCell sx={{ fontSize: "1rem", fontWeight: 400 }}>
-                        {row.date}
+                        {new Date(row.created_at).toISOString().split("T")[0]}
                       </TableCell>
                       <TableCell
                         sx={{
@@ -285,64 +293,5 @@ const DashboardTable = () => {
     </Box>
   );
 };
-
-const rows = [
-  {
-    id: 1,
-    lockerCode: "096",
-    timeLeft: "00:00",
-    date: "Jan 3, 2024",
-    status: "Ended",
-  },
-  {
-    id: 2,
-    lockerCode: "096",
-    timeLeft: "00:00",
-    date: "Jan 3, 2024",
-    status: "Ongoing",
-  },
-  {
-    id: 3,
-    lockerCode: "096",
-    timeLeft: "00:00",
-    date: "Jan 3, 2024",
-    status: "Ended",
-  },
-  {
-    id: 4,
-    lockerCode: "096",
-    timeLeft: "00:00",
-    date: "Jan 3, 2024",
-    status: "Ongoing",
-  },
-  {
-    id: 5,
-    lockerCode: "096",
-    timeLeft: "00:00",
-    date: "Jan 3, 2024",
-    status: "Closed",
-  },
-  {
-    id: 6,
-    lockerCode: "096",
-    timeLeft: "00:00",
-    date: "Jan 3, 2024",
-    status: "Ongoing",
-  },
-  {
-    id: 7,
-    lockerCode: "096",
-    timeLeft: "00:00",
-    date: "Jan 3, 2024",
-    status: "Ended",
-  },
-  {
-    id: 8,
-    lockerCode: "096",
-    timeLeft: "00:00",
-    date: "Jan 3, 2024",
-    status: "Closed",
-  },
-];
 
 export default DashboardTable;

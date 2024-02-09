@@ -18,7 +18,9 @@ import { Avatar, Menu, MenuItem, Tooltip } from "@mui/material";
 import lLogo from "../icons/l-logo.svg";
 import avatar from "../icons/avatar.svg";
 import logo from "../icons/logo.svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { authActions } from "../store/auth-slice";
 
 const drawerWidth = 90;
 
@@ -48,6 +50,13 @@ function SideHeader({ children }) {
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
+  };
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    dispatch(authActions.logout());
+    navigate("/login");
   };
 
   const drawer = (
@@ -119,6 +128,7 @@ function SideHeader({ children }) {
             sx={{
               "&:hover": { backgroundColor: "transparent" },
             }}
+            onClick={handleLogout}
           >
             <ListItemIcon
               sx={{

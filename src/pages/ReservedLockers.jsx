@@ -36,7 +36,7 @@ const ReservedLockers = () => {
     const getLockerCodes = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_API_URL}/lockers`,
+          `${import.meta.env.VITE_BACKEND_API_URL}/reservations`,
           {
             method: "GET",
             headers: {
@@ -48,7 +48,7 @@ const ReservedLockers = () => {
           throw new Error("failed to fetch lockers");
         }
         const lockers = await response.json();
-        setLockerCodes(lockers);
+        setLockerCodes(lockers.data);
       } catch (error) {
         console.error("Error fetching lockers: ", error);
       }
@@ -63,12 +63,24 @@ const ReservedLockers = () => {
 
   const getSearchedItems = () => {
     const filteredItems = lockerCodes.filter((item) =>
-      item.code.toLowerCase().includes(searchQuery.toLowerCase())
+      item.code
+        .toString()
+        .padStart(3, "0")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
     );
     const rearrangedItems = filteredItems.sort(
       (a, b) =>
-        a.code.toLowerCase().indexOf(searchQuery.toLowerCase()) -
-        b.code.toLowerCase().indexOf(searchQuery.toLowerCase())
+        a.code
+          .toString()
+          .padStart(3, "0")
+          .toLowerCase()
+          .indexOf(searchQuery.toLowerCase()) -
+        b.code
+          .toString()
+          .padStart(3, "0")
+          .toLowerCase()
+          .indexOf(searchQuery.toLowerCase())
     );
     return rearrangedItems;
   };
@@ -117,7 +129,7 @@ const ReservedLockers = () => {
               sx={{ borderRadius: "50px", width: "50%" }}
               freeSolo
               disableClearable
-              options={lockerCodes.map((item) => item.code)}
+              options={lockerCodes.map((item) => item.code.toString())}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -199,7 +211,7 @@ const ReservedLockers = () => {
                           textAlign: "center",
                         }}
                       >
-                        {item.code}
+                        {item.code.toString().padStart(3, "0")}
                       </TableCell>
                       <TableCell
                         sx={{
@@ -219,7 +231,9 @@ const ReservedLockers = () => {
                         }}
                       >
                         <Button
-                          onClick={() => handleReservation(item.code, item.id)}
+                          onClick={() =>
+                            handleReservation(item.code.toString(), item.id)
+                          }
                           sx={{
                             backgroundColor:
                               location.pathname === "/pending"

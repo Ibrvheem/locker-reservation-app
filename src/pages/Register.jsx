@@ -64,7 +64,6 @@ const Register = () => {
       }
       return newObject;
     });
-    console.log(isFormValid);
     if (isFormValid.includes(false))
       return alert("Please fill out all required fields");
     else {
@@ -92,8 +91,11 @@ const Register = () => {
           alert("Failed to Register User");
           throw new Error("Failed to submit form");
         }
-        dispatch(authActions.registered());
-        navigate("/dashboard");
+        const user = await response.json();
+        delete user.password;
+        console.log("Form submitted successfully");
+        dispatch(authActions.registered(user));
+        navigate("/login");
 
         console.log("Form submitted successfully");
       } catch (error) {

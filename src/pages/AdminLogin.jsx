@@ -45,8 +45,10 @@ const AdminLogin = () => {
         alert("Failed to Log in! Please try again.");
         throw new Error("Failed to submit form");
       }
+      const user = await response.json();
+      delete user.password;
       console.log("Form submitted successfully");
-      dispatch(authActions.loginAdmin());
+      dispatch(authActions.loginAdmin(user));
       navigate("/admin");
     } catch (error) {
       console.error("Error logging user in: ", error.message);

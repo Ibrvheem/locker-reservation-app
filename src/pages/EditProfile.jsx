@@ -13,16 +13,48 @@ import React from "react";
 import { ArrowBackIos } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import "/node_modules/flag-icons/css/flag-icons.min.css";
+import { useSelector } from "react-redux";
 
 const EditProfile = () => {
+  const user = useSelector((state) => state.auth.user);
   const [oldPassword, setOldPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
-  const [phone, setPhone] = React.useState("");
+  const [phone, setPhone] = React.useState(user.phone);
   const [callCode, setCallCode] = React.useState("");
   const [showOldPassword, setShowOldPassword] = React.useState(false);
   const [showNewPassword, setShowNewPassword] = React.useState(false);
 
   const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault;
+    try {
+      const formData = {
+        old_password: oldPassword,
+        new_password: newPassword,
+        phone: phone,
+        id: user.id,
+      };
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API_URL}/edit`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+      if (!response.ok) {
+        console.log(JSON.stringify(formData));
+        alert("Failed to Log in! Please try again.");
+        throw new Error("Failed to submit form");
+      }
+      console.log("Form submitted successfully");
+    } catch (error) {
+      console.error("Error editing profile: ", error.message);
+    }
+  };
 
   return (
     <HalfScreen>
@@ -238,6 +270,7 @@ const EditProfile = () => {
                   },
                 }}
                 disableRipple
+                onClick={handleSubmit}
               >
                 Save
               </Button>
