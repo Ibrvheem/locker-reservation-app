@@ -29,14 +29,12 @@ const DashboardTable = () => {
   useEffect(() => {
     const getLockerCodes = async () => {
       try {
-        // console.log(`${import.meta.env.VITE_BACKEND_API_URL}/reservations`);
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_API_URL}/reservations`,
           {
             method: "GET",
           }
         );
-        console.log(await response.json());
         if (!response.ok) {
           throw new Error("failed to fetch lockers");
         }
@@ -45,10 +43,6 @@ const DashboardTable = () => {
       } catch (error) {
         console.error("Error fetching lockers: ", error);
       }
-      // const response = await fetch(
-      //   `${import.meta.env.VITE_BACKEND_API_URL}/reservations`
-      // );
-      // console.log(await response.json());
     };
 
     getLockerCodes();
