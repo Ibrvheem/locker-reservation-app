@@ -13,10 +13,12 @@ import React from "react";
 import { ArrowBackIos } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import "/node_modules/flag-icons/css/flag-icons.min.css";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { editActions } from "../store/edit-slice";
 
 const EditProfile = () => {
   const user = useSelector((state) => state.auth.user);
+  // const editUser = useSelector((state) => state.edit.user);
   const [oldPassword, setOldPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
   const [phone, setPhone] = React.useState(user.phone);
@@ -25,6 +27,7 @@ const EditProfile = () => {
   const [showNewPassword, setShowNewPassword] = React.useState(false);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
     e.preventDefault;
@@ -50,7 +53,13 @@ const EditProfile = () => {
         alert("Failed to Log in! Please try again.");
         throw new Error("Failed to submit form");
       }
+      const editedUser = await response.json();
+      delete editedUser.old_password;
+      delete editedUser.new_password;
+      alert("Details changed successfully");
       console.log("Form submitted successfully");
+      dispatch(editActions.editProfile(editedUser));
+      navigate(-1);
     } catch (error) {
       console.error("Error editing profile: ", error.message);
     }

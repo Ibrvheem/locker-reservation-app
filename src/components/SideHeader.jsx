@@ -105,20 +105,21 @@ function SideHeader({ children }) {
               sx={{
                 "&:hover": { backgroundColor: "transparent" },
               }}
+              onClick={() => navigate("/edit-profile")}
             >
-              <Link to="/edit-profile">
-                <ListItemIcon
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    color: "#fff",
-                    marginTop: "2em",
-                  }}
-                >
-                  <PersonOutlineOutlinedIcon sx={{ fontSize: "2rem" }} />
-                </ListItemIcon>
-              </Link>
+              {/* <Link to="/edit-profile"> */}
+              <ListItemIcon
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  color: "#fff",
+                  marginTop: "2em",
+                }}
+              >
+                <PersonOutlineOutlinedIcon sx={{ fontSize: "2rem" }} />
+              </ListItemIcon>
+              {/* </Link> */}
             </ListItemButton>
           </ListItem>
         </Box>
