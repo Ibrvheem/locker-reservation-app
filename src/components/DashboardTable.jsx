@@ -372,7 +372,7 @@ const DashboardTable = () => {
                           fontSize: "1rem",
                           fontWeight: 400,
                           color:
-                            row.status === "Ended"
+                            row.status === "Pending"
                               ? "#FF5003"
                               : row.status === "Ongoing"
                               ? "#0D5B00"
