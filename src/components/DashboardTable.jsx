@@ -25,7 +25,6 @@ const DashboardTable = () => {
   const location = useLocation();
   const user = useSelector((state) => state.auth.user);
   // console.log(user);
-  console.log(ReservelockerCodes);
   const user_id = user.id;
 
   useEffect(() => {
@@ -168,13 +167,26 @@ const DashboardTable = () => {
   };
 
   return (
-    <Box>
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+    <Box
+      sx={{
+        fontSize: {
+          xs: "12px",
+          md: "16px",
+          overflowY: "hidden",
+        },
+      }}
+    >
+      <Box
+        sx={{
+          display: { xs: "block", md: "flex" },
+          justifyContent: "space-between",
+        }}
+      >
         <Box
           sx={{
             backgroundColor: "#E9E9E9",
             padding: "1em",
-            width: "25%",
+            width: { md: "28%" },
             borderRadius: "15px",
           }}
         >
@@ -255,7 +267,7 @@ const DashboardTable = () => {
                         variant="h4"
                         sx={{
                           color: "#fff",
-                          fontSize: "2rem",
+                          fontSize: { xs: "1.2rem", sm: "1.5rem", md: "2rem" },
                           fontWeight: 500,
                         }}
                       >
@@ -265,7 +277,7 @@ const DashboardTable = () => {
                         variant="body2"
                         sx={{
                           color: "#fff",
-                          fontSize: "1.25rem",
+                          fontSize: { xs: "1rem", sm: "1rem", md: "1.25rem" },
                           fontWeight: 400,
                           width: "55%",
                           textAlign: "center",
@@ -278,7 +290,7 @@ const DashboardTable = () => {
                         variant="body2"
                         sx={{
                           color: "#fff",
-                          fontSize: "1.25rem",
+                          fontSize: { xs: "1rem", sm: "1rem", md: "1.25rem" },
                           fontWeight: 500,
                           textAlign: "center",
                         }}
@@ -323,8 +335,9 @@ const DashboardTable = () => {
           sx={{
             backgroundColor: "#E9E9E9",
             padding: "1em",
-            width: "70%",
+            width: { md: "70%" },
             borderRadius: "15px",
+            marginTop: { xs: "2em", md: "0" },
           }}
         >
           <Typography
@@ -346,7 +359,7 @@ const DashboardTable = () => {
                       Locker Code
                     </TableCell>
                     <TableCell sx={{ fontSize: "1.125rem", fontWeight: 500 }}>
-                      Time Left
+                      Time
                     </TableCell>
                     <TableCell sx={{ fontSize: "1.125rem", fontWeight: 500 }}>
                       Date

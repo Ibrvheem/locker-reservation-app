@@ -154,6 +154,7 @@ const ReservedLockers = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          fontSize: { sm: "13px", md: "16px" },
         }}
       >
         <Box sx={{ width: "98%" }}>
@@ -214,7 +215,7 @@ const ReservedLockers = () => {
             <TableContainer
               sx={{
                 backgroundColor: "#E9E9E9",
-                width: "80%",
+                width: { sm: "90%", md: "80%" },
                 borderRadius: "15px",
               }}
             >
@@ -347,20 +348,14 @@ const ReservedLockers = () => {
                               }}
                             >
                               <Typography
-                                variant="h4"
-                                sx={{
-                                  color: "#fff",
-                                  fontSize: "2rem",
-                                  fontWeight: 500,
-                                }}
-                              >
-                                Your Locker Has Been Reserved !
-                              </Typography>
-                              <Typography
                                 variant="body2"
                                 sx={{
                                   color: "#fff",
-                                  fontSize: "1.25rem",
+                                  fontSize: {
+                                    xs: "1rem",
+                                    sm: "1rem",
+                                    md: "1.25rem",
+                                  },
                                   fontWeight: 400,
                                   width: "55%",
                                   textAlign: "center",
@@ -373,7 +368,11 @@ const ReservedLockers = () => {
                                 variant="body2"
                                 sx={{
                                   color: "#fff",
-                                  fontSize: "1.25rem",
+                                  fontSize: {
+                                    xs: "1rem",
+                                    sm: "1rem",
+                                    md: "1.25rem",
+                                  },
                                   fontWeight: 500,
                                   textAlign: "center",
                                 }}

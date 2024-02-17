@@ -147,6 +147,7 @@ const PendingReservations = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          fontSize: { sm: "13px", md: "16px" },
         }}
       >
         <Box sx={{ width: "98%" }}>
@@ -209,7 +210,7 @@ const PendingReservations = () => {
             <TableContainer
               sx={{
                 backgroundColor: "#E9E9E9",
-                width: "80%",
+                width: { sm: "90%", md: "80%" },
                 borderRadius: "15px",
               }}
             >
@@ -342,7 +343,11 @@ const PendingReservations = () => {
                                 variant="h4"
                                 sx={{
                                   color: "#fff",
-                                  fontSize: "2rem",
+                                  fontSize: {
+                                    xs: "1.2rem",
+                                    sm: "1.5rem",
+                                    md: "2rem",
+                                  },
                                   fontWeight: 500,
                                 }}
                               >
@@ -352,7 +357,11 @@ const PendingReservations = () => {
                                 variant="body2"
                                 sx={{
                                   color: "#fff",
-                                  fontSize: "1.25rem",
+                                  fontSize: {
+                                    xs: "1rem",
+                                    sm: "1rem",
+                                    md: "1.25rem",
+                                  },
                                   fontWeight: 400,
                                   width: "55%",
                                   textAlign: "center",
@@ -365,7 +374,11 @@ const PendingReservations = () => {
                                 variant="body2"
                                 sx={{
                                   color: "#fff",
-                                  fontSize: "1.25rem",
+                                  fontSize: {
+                                    xs: "1rem",
+                                    sm: "1rem",
+                                    md: "1.25rem",
+                                  },
                                   fontWeight: 500,
                                   textAlign: "center",
                                 }}

@@ -2,8 +2,58 @@ import { Box, Typography } from "@mui/material";
 import SideHeader from "../components/SideHeader";
 import DashboardTable from "../components/DashboardTable";
 import { Link } from "react-router-dom";
+import React, { useEffect } from "react";
 
 const AdminDashboard = () => {
+  const [lockerCodes, setLockerCodes] = React.useState([]);
+  const [reservedLockers, setReservedLockers] = React.useState([]);
+  const [availableLockers, setAvailableLockers] = React.useState([]);
+  const [pendingRequests, setPendingRequests] = React.useState([]);
+
+  useEffect(() => {
+    const getLockerCodes = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_API_URL}/available_lockers`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error("failed to fetch lockers");
+        }
+        const lockers = await response.json();
+        setLockerCodes(lockers.data);
+      } catch (error) {
+        console.error("Error fetching lockers: ", error);
+      }
+    };
+    getLockerCodes();
+  }, []);
+
+  const totalLockers = lockerCodes.length;
+  useEffect(() => {
+    const reserved = lockerCodes.filter(
+      (locker) =>
+        locker.reservations !== null && locker.reservations.status === "Ongoing"
+    );
+    const pending = lockerCodes.filter(
+      (locker) =>
+        locker.reservations !== null &&
+        locker.reservations.status === "Reserved"
+    );
+    const available = lockerCodes.filter(
+      (locker) => locker.reservations === null
+    );
+
+    setReservedLockers(reserved.length);
+    setPendingRequests(pending.length);
+    setAvailableLockers(available.length);
+  }, [lockerCodes]);
+
   return (
     <SideHeader>
       <Box
@@ -27,9 +77,11 @@ const AdminDashboard = () => {
           </Typography>
           <Box
             sx={{
-              display: "flex",
+              display: { xs: "grid", md: "flex" },
               justifyContent: "space-between",
               alignItems: "center",
+              gridTemplateColumns: "auto auto",
+              width: "100%",
             }}
           >
             <Box
@@ -37,7 +89,7 @@ const AdminDashboard = () => {
                 backgroundImage:
                   "linear-gradient(to right, rgb(252, 175, 68) , rgb(102, 39, 62))",
                 padding: "1em 2em",
-                width: "24%",
+                width: { xs: "90%", md: "24%" },
                 borderRadius: "5px",
                 margin: "1em 0",
               }}
@@ -52,7 +104,7 @@ const AdminDashboard = () => {
                 variant="h4"
                 sx={{ color: "#0D0D0D", fontSize: "2.25rem", fontWeight: 600 }}
               >
-                64
+                {totalLockers}
               </Typography>
             </Box>
             <Box
@@ -60,7 +112,7 @@ const AdminDashboard = () => {
                 backgroundImage:
                   "linear-gradient(to right, rgb(247, 231, 170) , rgb(234, 166, 120))",
                 padding: "1em 2em",
-                width: "24%",
+                width: { xs: "90%", md: "24%" },
                 borderRadius: "5px",
                 margin: "1em 0",
               }}
@@ -75,7 +127,7 @@ const AdminDashboard = () => {
                 variant="h4"
                 sx={{ color: "#0D0D0D", fontSize: "2.25rem", fontWeight: 600 }}
               >
-                30
+                {availableLockers}
               </Typography>
             </Box>
             <Box
@@ -83,7 +135,7 @@ const AdminDashboard = () => {
                 backgroundImage:
                   "linear-gradient(to right, rgb(170, 217, 233) , rgb(154, 120, 160))",
                 padding: "1em 2em",
-                width: "24%",
+                width: { xs: "90%", md: "24%" },
                 borderRadius: "5px",
                 margin: "1em 0",
               }}
@@ -110,7 +162,7 @@ const AdminDashboard = () => {
                     fontWeight: 600,
                   }}
                 >
-                  18
+                  {reservedLockers}
                 </Typography>
               </Link>
             </Box>
@@ -119,7 +171,7 @@ const AdminDashboard = () => {
                 backgroundImage:
                   "linear-gradient(to right, rgb(217, 171, 93) , rgb(218, 106, 94))",
                 padding: "1em 2em",
-                width: "24%",
+                width: { xs: "90%", md: "24%" },
                 borderRadius: "5px",
                 margin: "1em 0",
               }}
@@ -146,7 +198,7 @@ const AdminDashboard = () => {
                     fontWeight: 600,
                   }}
                 >
-                  12
+                  {pendingRequests}
                 </Typography>
               </Link>
             </Box>
