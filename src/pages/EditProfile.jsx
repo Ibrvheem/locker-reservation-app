@@ -7,6 +7,7 @@ import {
   Select,
   MenuItem,
   Button,
+  CircularProgress,
 } from "@mui/material";
 import HalfScreen from "../components/HalfScreen";
 import React from "react";
@@ -25,12 +26,14 @@ const EditProfile = () => {
   const [callCode, setCallCode] = React.useState("");
   const [showOldPassword, setShowOldPassword] = React.useState(false);
   const [showNewPassword, setShowNewPassword] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
     e.preventDefault;
+    setLoading(true);
     try {
       const formData = {
         old_password: oldPassword,
@@ -50,7 +53,7 @@ const EditProfile = () => {
       );
       if (!response.ok) {
         console.log(JSON.stringify(formData));
-        alert("Failed to Log in! Please try again.");
+        alert("Failed to edit profile! Please try again.");
         throw new Error("Failed to submit form");
       }
       const editedUser = await response.json();
@@ -62,6 +65,8 @@ const EditProfile = () => {
       navigate(-1);
     } catch (error) {
       console.error("Error editing profile: ", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -280,8 +285,9 @@ const EditProfile = () => {
                 }}
                 disableRipple
                 onClick={handleSubmit}
+                disabled={loading}
               >
-                Save
+                {loading ? <CircularProgress size={25} /> : "Save"}
               </Button>
             </Box>
           </Box>

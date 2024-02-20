@@ -21,11 +21,38 @@ const DashboardTable = () => {
   const [recentLockers, setRecentLockers] = React.useState([]);
   const [reservationId, setReservationId] = React.useState("");
   const [selectedLockerId, setSelectedLockerId] = React.useState(null);
+  const [loading, setLoading] = React.useState(false);
+  const [data, setData] = React.useState(null); // where we will store the updated data
 
   const location = useLocation();
   const user = useSelector((state) => state.auth.user);
-  // console.log(user);
   const user_id = user.id;
+
+  useEffect(() => {
+    const socket = new WebSocket(
+      `${
+        import.meta.env.VITE_WEBSOCKET_API_URL
+      }/ws/update_user_reservation/${user_id}`
+    );
+
+    socket.onopen = () => {
+      console.log("WebSocket connected");
+    };
+
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      console.log("Received data:", message);
+      setData(message);
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket disconnected");
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, []);
 
   useEffect(() => {
     const getLockerCodes = async () => {
@@ -106,6 +133,7 @@ const DashboardTable = () => {
     setSelectedLockerId(id);
     console.log(selectedLockerId);
     setOpenModal(true);
+    setLoading(true);
     getReservedLockerCodes(lockerCode);
     console.log(
       `Reserving locker with the locker code: ${lockerCode} with the id: ${id}`
@@ -135,6 +163,8 @@ const DashboardTable = () => {
       setReservationId(responseData.reservation_id);
     } catch (error) {
       console.error("Error creating Unique id", error);
+    } finally {
+      setLoading(false);
     }
     getReservedLockerCodes(lockerCode);
   };
@@ -142,6 +172,29 @@ const DashboardTable = () => {
   const handleClose = async () => {
     setOpenModal(false);
     await fetchUpdatedLockers();
+    await fetchUpdatedReservations();
+  };
+
+  const fetchUpdatedReservations = async () => {
+    try {
+      const updatedResponse = await fetch(
+        `${import.meta.env.VITE_BACKEND_API_URL}/reservations/${user_id}`,
+        {
+          method: "GET",
+        }
+      );
+
+      // Check if fetching updated lockers was successful
+      if (!updatedResponse.ok) {
+        throw new Error("Failed to fetch updated reservations");
+      }
+
+      // Update state with updated locker codes
+      const updatedReservations = await updatedResponse.json();
+      setRecentLockers(updatedReservations);
+    } catch (error) {
+      console.error("Error fetching updated reservations", error);
+    }
   };
 
   const fetchUpdatedLockers = async () => {
@@ -267,7 +320,11 @@ const DashboardTable = () => {
                         variant="h4"
                         sx={{
                           color: "#fff",
-                          fontSize: { xs: "1.2rem", sm: "1.5rem", md: "2rem" },
+                          fontSize: {
+                            xs: "1.2rem",
+                            sm: "1.5rem",
+                            md: "2rem",
+                          },
                           fontWeight: 500,
                         }}
                       >
@@ -307,7 +364,7 @@ const DashboardTable = () => {
                           margin: "2em 0",
                         }}
                       >
-                        {reservationId}
+                        {loading ? "Generating id" : reservationId}
                       </Typography>
                       <Button
                         onClick={() => handleClose()}
@@ -369,55 +426,57 @@ const DashboardTable = () => {
                     </TableCell>
                   </TableRow>
                 </TableHead>
-                <TableBody>
-                  {recentLockers.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      sx={{
-                        "&:last-child td, &:last-child th": { border: 0 },
-                      }}
-                    >
-                      <TableCell sx={{ fontSize: "1rem", fontWeight: 400 }}>
-                        {row.locker_id.toString().padStart(3, "0")}
-                      </TableCell>
-                      <TableCell
+                {data && (
+                  <TableBody>
+                    {recentLockers.map((row) => (
+                      <TableRow
+                        key={row.id}
                         sx={{
-                          fontSize: "1rem",
-                          fontWeight: 400,
-                          color:
-                            row.status === "Pending"
-                              ? "#FF5003"
-                              : row.status === "Ongoing"
-                              ? "#0D5B00"
-                              : "#DE6944",
+                          "&:last-child td, &:last-child th": { border: 0 },
                         }}
                       >
-                        {new Date(row.created_at).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          second: "2-digit",
-                        })}
-                      </TableCell>
-                      <TableCell sx={{ fontSize: "1rem", fontWeight: 400 }}>
-                        {new Date(row.created_at).toISOString().split("T")[0]}
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          fontSize: "1rem",
-                          fontWeight: 400,
-                          color:
-                            row.status === "Ended"
-                              ? "#FF5003"
-                              : row.status === "Ongoing"
-                              ? "#0D5B00"
-                              : "#DE6944",
-                        }}
-                      >
-                        {row.status}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
+                        <TableCell sx={{ fontSize: "1rem", fontWeight: 400 }}>
+                          {row.locker_id.toString().padStart(3, "0")}
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            fontSize: "1rem",
+                            fontWeight: 400,
+                            color:
+                              row.status === "Reserved"
+                                ? "#FF5003"
+                                : row.status === "Ongoing"
+                                ? "#0D5B00"
+                                : "#DE6944",
+                          }}
+                        >
+                          {new Date(row.created_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                          })}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: "1rem", fontWeight: 400 }}>
+                          {new Date(row.created_at).toISOString().split("T")[0]}
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            fontSize: "1rem",
+                            fontWeight: 400,
+                            color:
+                              row.status === "Ended"
+                                ? "#FF5003"
+                                : row.status === "Ongoing"
+                                ? "#0D5B00"
+                                : "#DE6944",
+                          }}
+                        >
+                          {row.status}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                )}
               </Table>
             </TableContainer>
           </Box>

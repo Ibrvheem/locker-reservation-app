@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  CircularProgress,
   InputAdornment,
   InputLabel,
   TextField,
@@ -17,6 +18,8 @@ const AdminLogin = () => {
   const [staffId, setStaffId] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+
   // const [wrongStaffId, setWrongStaffId] = React.useState(false);
   // const [wrongPassword, setWrongPassword] = React.useState(false);
   const navigate = useNavigate();
@@ -24,6 +27,7 @@ const AdminLogin = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const formData = {
         staffId: staffId,
@@ -52,6 +56,8 @@ const AdminLogin = () => {
       navigate("/admin");
     } catch (error) {
       console.error("Error logging user in: ", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -250,8 +256,9 @@ const AdminLogin = () => {
                 }}
                 onClick={handleLogin}
                 disableRipple
+                disabled={loading}
               >
-                Sign In
+                {loading ? <CircularProgress size={25} /> : "Sign In"}
               </Button>
             </Box>
           </Box>

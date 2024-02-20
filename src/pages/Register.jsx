@@ -7,6 +7,7 @@ import {
   Select,
   MenuItem,
   Button,
+  CircularProgress,
 } from "@mui/material";
 import HalfScreen from "../components/HalfScreen";
 import React from "react";
@@ -20,6 +21,7 @@ const Register = () => {
   const [callCode, setCallCode] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
   const [phone, setPhone] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
   const [formData, setFormData] = React.useState({
     fullname: { value: "", isValid: true, errorText: "Fullname is required" },
     regNo: {
@@ -64,9 +66,9 @@ const Register = () => {
       }
       return newObject;
     });
-    if (isFormValid.includes(false))
+    if (isFormValid.includes(false)) {
       return alert("Please fill out all required fields");
-    else {
+    } else {
       const regData = {
         fullname: formData.fullname.value,
         regNo: formData.regNo.value,
@@ -74,6 +76,7 @@ const Register = () => {
         email: formData.email.value,
         phone: phone,
       };
+      setLoading(true);
       try {
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_API_URL}/create_user`,
@@ -100,6 +103,8 @@ const Register = () => {
         console.log("Form submitted successfully");
       } catch (error) {
         console.error("Error submitting form: ", error.message);
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -379,8 +384,9 @@ const Register = () => {
                 }}
                 onClick={handleRegistration}
                 disableRipple
+                disabled={loading}
               >
-                Register Account
+                {loading ? <CircularProgress size={25} /> : "Register Account"}
               </Button>
             </Box>
           </Box>
