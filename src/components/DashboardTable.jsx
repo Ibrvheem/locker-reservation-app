@@ -23,6 +23,7 @@ const DashboardTable = () => {
   const [selectedLockerId, setSelectedLockerId] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [data, setData] = React.useState(null); // where we will store the updated data
+  const [timeRemaining, setTimeRemaining] = React.useState(0);
 
   const location = useLocation();
   const user = useSelector((state) => state.auth.user);
@@ -41,7 +42,6 @@ const DashboardTable = () => {
 
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      console.log("Received data:", message);
       setData(message);
     };
 
@@ -53,6 +53,76 @@ const DashboardTable = () => {
       socket.close();
     };
   }, []);
+
+  const getTimeRemaining = async (lockerCode) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API_URL}/time_remaining/${lockerCode}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("failed to fetch remaining time");
+      }
+      const remainingTime = await response.json();
+      return remainingTime;
+    } catch (error) {
+      console.error("Error fetching time: ", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchTimeRemainingForLockers = async () => {
+      const timeRemainingMap = {};
+      for (const locker of recentLockers) {
+        const time = await getTimeRemaining(locker.locker_id);
+        timeRemainingMap[locker.locker_id] = time;
+      }
+      setTimeRemaining(timeRemainingMap);
+    };
+    fetchTimeRemainingForLockers();
+  }, [recentLockers]);
+
+  useEffect(() => {
+    const deleteReservedRows = async () => {
+      try {
+        for (const locker of recentLockers) {
+          const response = await fetch(
+            `${import.meta.env.VITE_BACKEND_API_URL}/delete_reserved_row/${
+              locker.locker_id
+            }`,
+            {
+              method: "DELETE",
+              body: JSON.stringify({ locker_id: locker.locker_id }),
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          if (!response.ok) {
+            throw new Error(
+              `Failed to delete reserved row for locker ${locker.locker_id}`
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error deleting reserved rows:", error);
+      }
+    };
+
+    // Run deleteReservedRows initially
+    deleteReservedRows();
+
+    // Run deleteReservedRows every 1 minute
+    const intervalId = setInterval(deleteReservedRows, 60000); // 1 minute in milliseconds
+
+    // Clear the interval when the component is unmounted
+    return () => clearInterval(intervalId);
+  }, [recentLockers]);
 
   useEffect(() => {
     const getLockerCodes = async () => {
@@ -159,7 +229,6 @@ const DashboardTable = () => {
         throw new Error("Failed to generate UUID");
       }
       const responseData = await response.json();
-      console.log(`Reservation ID: ${reservationId}`);
       setReservationId(responseData.reservation_id);
     } catch (error) {
       console.error("Error creating Unique id", error);
@@ -169,10 +238,11 @@ const DashboardTable = () => {
     getReservedLockerCodes(lockerCode);
   };
 
-  const handleClose = async () => {
+  const handleClose = async (lockerCode) => {
     setOpenModal(false);
     await fetchUpdatedLockers();
     await fetchUpdatedReservations();
+    getTimeRemaining(lockerCode);
   };
 
   const fetchUpdatedReservations = async () => {
@@ -367,7 +437,7 @@ const DashboardTable = () => {
                         {loading ? "Generating id" : reservationId}
                       </Typography>
                       <Button
-                        onClick={() => handleClose()}
+                        onClick={() => handleClose(item.locker_id)}
                         sx={{
                           color: "#040E18",
                           backgroundColor: "#fff",
@@ -450,11 +520,7 @@ const DashboardTable = () => {
                                 : "#DE6944",
                           }}
                         >
-                          {new Date(row.created_at).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                          })}
+                          {timeRemaining[row.locker_id]}
                         </TableCell>
                         <TableCell sx={{ fontSize: "1rem", fontWeight: 400 }}>
                           {new Date(row.created_at).toISOString().split("T")[0]}
