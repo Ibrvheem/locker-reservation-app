@@ -118,7 +118,7 @@ const DashboardTable = () => {
     deleteReservedRows();
 
     // Run deleteReservedRows every 1 minute
-    const intervalId = setInterval(deleteReservedRows, 60000); // 1 minute in milliseconds
+    const intervalId = setInterval(deleteReservedRows, 30000); // 30 seconds in milliseconds
 
     // Clear the interval when the component is unmounted
     return () => clearInterval(intervalId);
