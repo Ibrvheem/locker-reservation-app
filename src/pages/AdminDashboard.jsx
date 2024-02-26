@@ -80,12 +80,12 @@ const AdminDashboard = () => {
   useEffect(() => {
     const reserved = lockerCodes.filter(
       (locker) =>
-        locker.reservations !== null && locker.reservations.status === "Ongoing"
+        locker.reservations !== null &&
+        locker.reservations.status === "Reserved"
     );
     const pending = lockerCodes.filter(
       (locker) =>
-        locker.reservations !== null &&
-        locker.reservations.status === "Reserved"
+        locker.reservations !== null && locker.reservations.status === "Pending"
     );
     const available = lockerCodes.filter(
       (locker) => locker.reservations === null

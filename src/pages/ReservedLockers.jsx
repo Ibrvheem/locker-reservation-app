@@ -140,9 +140,9 @@ const ReservedLockers = () => {
     return rearrangedItems;
   };
 
-  const handleClose = () => {
-    setOpenModal(false); // Close the modal only when the source is the button
-  };
+  // const handleClose = () => {
+  //   setOpenModal(false); // Close the modal only when the source is the button
+  // };
 
   const fetchUpdatedLockers = async () => {
     try {
@@ -281,7 +281,7 @@ const ReservedLockers = () => {
                   }}
                 >
                   {getSearchedItems()
-                    .filter((item) => item.status === "Ongoing")
+                    .filter((item) => item.status === "Reserved")
                     .map((item) => (
                       <TableRow
                         sx={{
@@ -346,7 +346,10 @@ const ReservedLockers = () => {
                               ? "Confirm"
                               : "Checkout"}
                           </Button>
-                          <Modal open={openModal}>
+                          <Modal
+                            open={openModal}
+                            onClose={() => setOpenModal(false)}
+                          >
                             <Box
                               sx={{
                                 position: "absolute",
@@ -365,24 +368,22 @@ const ReservedLockers = () => {
                               }}
                             >
                               <Typography
-                                variant="body2"
+                                variant="h4"
                                 sx={{
                                   color: "#fff",
                                   fontSize: {
-                                    xs: "1rem",
-                                    sm: "1rem",
-                                    md: "1.25rem",
+                                    xs: "1.2rem",
+                                    sm: "1.5rem",
+                                    md: "2rem",
                                   },
-                                  fontWeight: 400,
-                                  width: "55%",
-                                  textAlign: "center",
-                                  margin: ".5em 0",
+                                  fontWeight: 500,
+                                  padding: "3em",
                                 }}
                               >
                                 Checkout successful
                               </Typography>
 
-                              <Button
+                              {/* <Button
                                 onClick={() => handleClose()}
                                 sx={{
                                   color: "#040E18",
@@ -398,7 +399,7 @@ const ReservedLockers = () => {
                                 disableRipple
                               >
                                 Continue
-                              </Button>
+                              </Button> */}
                             </Box>
                           </Modal>
                         </TableCell>

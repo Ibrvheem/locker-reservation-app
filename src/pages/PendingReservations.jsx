@@ -138,7 +138,7 @@ const PendingReservations = () => {
     return rearrangedItems;
   };
 
-  const handleClose = () => setOpenModal(false);
+  // const handleClose = () => setOpenModal(false);
 
   const fetchUpdatedLockers = async () => {
     try {
@@ -279,7 +279,7 @@ const PendingReservations = () => {
                   }}
                 >
                   {getSearchedItems()
-                    .filter((item) => item.status === "Reserved")
+                    .filter((item) => item.status === "Pending")
                     .map((item) => (
                       <TableRow
                         sx={{
@@ -341,7 +341,10 @@ const PendingReservations = () => {
                               ? "Confirm"
                               : "Checkout"}
                           </Button>
-                          <Modal open={openModal}>
+                          <Modal
+                            open={openModal}
+                            onClose={() => setOpenModal(false)}
+                          >
                             <Box
                               sx={{
                                 position: "absolute",
@@ -369,12 +372,13 @@ const PendingReservations = () => {
                                     md: "2rem",
                                   },
                                   fontWeight: 500,
+                                  padding: "3em",
                                 }}
                               >
                                 Reservation verified
                               </Typography>
 
-                              <Button
+                              {/* <Button
                                 onClick={() => handleClose()}
                                 sx={{
                                   color: "#040E18",
@@ -390,7 +394,7 @@ const PendingReservations = () => {
                                 disableRipple
                               >
                                 Continue
-                              </Button>
+                              </Button> */}
                             </Box>
                           </Modal>
                         </TableCell>

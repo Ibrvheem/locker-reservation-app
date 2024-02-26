@@ -56,7 +56,7 @@ function SideHeader({ children }) {
   const navigate = useNavigate();
   const handleLogout = () => {
     dispatch(authActions.logout());
-    navigate("/login");
+    navigate("/");
   };
 
   const drawer = (

@@ -85,11 +85,11 @@ const DashboardTable = () => {
   }, [recentLockers]);
 
   useEffect(() => {
-    const deleteReservedRows = async () => {
+    const deletePendingRows = async () => {
       try {
         for (const locker of recentLockers) {
           const response = await fetch(
-            `${import.meta.env.VITE_BACKEND_API_URL}/delete_reserved_row/${
+            `${import.meta.env.VITE_BACKEND_API_URL}/delete_pending_row/${
               locker.locker_id
             }`,
             {
@@ -111,11 +111,11 @@ const DashboardTable = () => {
       }
     };
 
-    // Run deleteReservedRows initially
-    deleteReservedRows();
+    // Run deletePendingRows initially
+    deletePendingRows();
 
-    // Run deleteReservedRows every 1 minute
-    const intervalId = setInterval(deleteReservedRows, 10000); // 10 seconds in milliseconds
+    // Run deletePendingRows every 1 minute
+    const intervalId = setInterval(deletePendingRows, 10000); // 10 seconds in milliseconds
 
     // Clear the interval when the component is unmounted
     return () => clearInterval(intervalId);
@@ -406,7 +406,7 @@ const DashboardTable = () => {
                           margin: ".5em 0",
                         }}
                       >
-                        You have 15 minutes till your reservation ends
+                        You have 15 minutes to confirm your reservation
                       </Typography>
                       <Typography
                         variant="body2"
@@ -477,16 +477,64 @@ const DashboardTable = () => {
               <Table aria-label="simple table">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontSize: "1.125rem", fontWeight: 500 }}>
+                    <TableCell
+                      sx={{
+                        fontSize: {
+                          xs: "0.825rem",
+                          md: "1rem",
+                          lg: "1.125rem",
+                        },
+                        fontWeight: 500,
+                      }}
+                    >
                       Locker Code
                     </TableCell>
-                    <TableCell sx={{ fontSize: "1.125rem", fontWeight: 500 }}>
+                    <TableCell
+                      sx={{
+                        fontSize: {
+                          xs: "0.825rem",
+                          md: "1rem",
+                          lg: "1.125rem",
+                        },
+                        fontWeight: 500,
+                      }}
+                    >
                       Time Left
                     </TableCell>
-                    <TableCell sx={{ fontSize: "1.125rem", fontWeight: 500 }}>
+                    <TableCell
+                      sx={{
+                        fontSize: {
+                          xs: "0.825rem",
+                          md: "1rem",
+                          lg: "1.125rem",
+                        },
+                        fontWeight: 500,
+                      }}
+                    >
                       Date
                     </TableCell>
-                    <TableCell sx={{ fontSize: "1.125rem", fontWeight: 500 }}>
+                    <TableCell
+                      sx={{
+                        fontSize: {
+                          xs: "0.825rem",
+                          md: "1rem",
+                          lg: "1.125rem",
+                        },
+                        fontWeight: 500,
+                      }}
+                    >
+                      Unique ID
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontSize: {
+                          xs: "0.825rem",
+                          md: "1rem",
+                          lg: "1.125rem",
+                        },
+                        fontWeight: 500,
+                      }}
+                    >
                       Status
                     </TableCell>
                   </TableRow>
@@ -499,7 +547,16 @@ const DashboardTable = () => {
                         "&:last-child td, &:last-child th": { border: 0 },
                       }}
                     >
-                      <TableCell sx={{ fontSize: "1rem", fontWeight: 400 }}>
+                      <TableCell
+                        sx={{
+                          fontSize: {
+                            xs: "0.8rem",
+                            md: "0.9rem",
+                            lg: "1rem",
+                          },
+                          fontWeight: 400,
+                        }}
+                      >
                         {row.locker_id.toString().padStart(3, "0")}
                       </TableCell>
                       <TableCell
@@ -507,26 +564,57 @@ const DashboardTable = () => {
                           fontSize: "1rem",
                           fontWeight: 400,
                           color:
-                            row.status === "Reserved"
+                            row.status === "Pending"
                               ? "#FF5003"
-                              : row.status === "Ongoing"
+                              : row.status === "Reserved"
                               ? "#0D5B00"
                               : "#DE6944",
                         }}
                       >
                         {timeRemaining[row.locker_id]}
                       </TableCell>
-                      <TableCell sx={{ fontSize: "1rem", fontWeight: 400 }}>
+                      <TableCell
+                        sx={{
+                          fontSize: {
+                            xs: "0.8rem",
+                            md: "0.9rem",
+                            lg: "1rem",
+                          },
+                          fontWeight: 400,
+                        }}
+                      >
                         {new Date(row.created_at).toISOString().split("T")[0]}
                       </TableCell>
                       <TableCell
                         sx={{
-                          fontSize: "1rem",
+                          fontSize: {
+                            xs: "0.8rem",
+                            md: "0.9rem",
+                            lg: "1rem",
+                          },
                           fontWeight: 400,
                           color:
                             row.status === "Ended"
                               ? "#FF5003"
-                              : row.status === "Ongoing"
+                              : row.status === "Reserved"
+                              ? "#0D5B00"
+                              : "#DE6944",
+                        }}
+                      >
+                        {row.reservation_id}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontSize: {
+                            xs: "0.8rem",
+                            md: "0.9rem",
+                            lg: "1rem",
+                          },
+                          fontWeight: 400,
+                          color:
+                            row.status === "Ended"
+                              ? "#FF5003"
+                              : row.status === "Reserved"
                               ? "#0D5B00"
                               : "#DE6944",
                         }}
