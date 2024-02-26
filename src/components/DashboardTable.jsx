@@ -13,16 +13,17 @@ import {
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
 const DashboardTable = () => {
   const [openModal, setOpenModal] = React.useState(false);
   const [lockerCodes, setLockerCodes] = React.useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [ReservelockerCodes, setReserveLockerCodes] = React.useState([]);
   const [recentLockers, setRecentLockers] = React.useState([]);
   const [reservationId, setReservationId] = React.useState("");
   const [selectedLockerId, setSelectedLockerId] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
-  const [data, setData] = React.useState(null); // where we will store the updated data
   const [timeRemaining, setTimeRemaining] = React.useState(0);
 
   const location = useLocation();
@@ -30,27 +31,23 @@ const DashboardTable = () => {
   const user_id = user.id;
 
   useEffect(() => {
-    const socket = new WebSocket(
-      `${
-        import.meta.env.VITE_WEBSOCKET_API_URL
-      }/ws/update_user_reservation/${user_id}`
-    );
+    const subscription = supabase
+      .channel("table_db_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "reservations" },
+        (payload) => {
+          // Update your state or trigger a function to fetch updated data
+          fetchUpdatedLockers();
+          fetchUpdatedReservations();
+          console.log("Change received: ", payload);
+        }
+      )
+      .subscribe();
 
-    socket.onopen = () => {
-      console.log("WebSocket connected");
-    };
-
-    socket.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      setData(message);
-    };
-
-    socket.onclose = () => {
-      console.log("WebSocket disconnected");
-    };
-
+    // Clean up subscription on unmount
     return () => {
-      socket.close();
+      subscription.unsubscribe();
     };
   }, []);
 
@@ -118,7 +115,7 @@ const DashboardTable = () => {
     deleteReservedRows();
 
     // Run deleteReservedRows every 1 minute
-    const intervalId = setInterval(deleteReservedRows, 30000); // 30 seconds in milliseconds
+    const intervalId = setInterval(deleteReservedRows, 10000); // 10 seconds in milliseconds
 
     // Clear the interval when the component is unmounted
     return () => clearInterval(intervalId);
@@ -240,8 +237,6 @@ const DashboardTable = () => {
 
   const handleClose = async (lockerCode) => {
     setOpenModal(false);
-    await fetchUpdatedLockers();
-    await fetchUpdatedReservations();
     getTimeRemaining(lockerCode);
   };
 
@@ -486,7 +481,7 @@ const DashboardTable = () => {
                       Locker Code
                     </TableCell>
                     <TableCell sx={{ fontSize: "1.125rem", fontWeight: 500 }}>
-                      Time
+                      Time Left
                     </TableCell>
                     <TableCell sx={{ fontSize: "1.125rem", fontWeight: 500 }}>
                       Date
@@ -496,53 +491,51 @@ const DashboardTable = () => {
                     </TableCell>
                   </TableRow>
                 </TableHead>
-                {data && (
-                  <TableBody>
-                    {recentLockers.map((row) => (
-                      <TableRow
-                        key={row.id}
+                <TableBody>
+                  {recentLockers.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      sx={{
+                        "&:last-child td, &:last-child th": { border: 0 },
+                      }}
+                    >
+                      <TableCell sx={{ fontSize: "1rem", fontWeight: 400 }}>
+                        {row.locker_id.toString().padStart(3, "0")}
+                      </TableCell>
+                      <TableCell
                         sx={{
-                          "&:last-child td, &:last-child th": { border: 0 },
+                          fontSize: "1rem",
+                          fontWeight: 400,
+                          color:
+                            row.status === "Reserved"
+                              ? "#FF5003"
+                              : row.status === "Ongoing"
+                              ? "#0D5B00"
+                              : "#DE6944",
                         }}
                       >
-                        <TableCell sx={{ fontSize: "1rem", fontWeight: 400 }}>
-                          {row.locker_id.toString().padStart(3, "0")}
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            fontSize: "1rem",
-                            fontWeight: 400,
-                            color:
-                              row.status === "Reserved"
-                                ? "#FF5003"
-                                : row.status === "Ongoing"
-                                ? "#0D5B00"
-                                : "#DE6944",
-                          }}
-                        >
-                          {timeRemaining[row.locker_id]}
-                        </TableCell>
-                        <TableCell sx={{ fontSize: "1rem", fontWeight: 400 }}>
-                          {new Date(row.created_at).toISOString().split("T")[0]}
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            fontSize: "1rem",
-                            fontWeight: 400,
-                            color:
-                              row.status === "Ended"
-                                ? "#FF5003"
-                                : row.status === "Ongoing"
-                                ? "#0D5B00"
-                                : "#DE6944",
-                          }}
-                        >
-                          {row.status}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                )}
+                        {timeRemaining[row.locker_id]}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: "1rem", fontWeight: 400 }}>
+                        {new Date(row.created_at).toISOString().split("T")[0]}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontSize: "1rem",
+                          fontWeight: 400,
+                          color:
+                            row.status === "Ended"
+                              ? "#FF5003"
+                              : row.status === "Ongoing"
+                              ? "#0D5B00"
+                              : "#DE6944",
+                        }}
+                      >
+                        {row.status}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
               </Table>
             </TableContainer>
           </Box>

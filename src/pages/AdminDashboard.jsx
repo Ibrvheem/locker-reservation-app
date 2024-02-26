@@ -3,12 +3,33 @@ import SideHeader from "../components/SideHeader";
 import DashboardTable from "../components/DashboardTable";
 import { Link } from "react-router-dom";
 import React, { useEffect } from "react";
+import { supabase } from "../supabaseClient";
 
 const AdminDashboard = () => {
   const [lockerCodes, setLockerCodes] = React.useState([]);
   const [reservedLockers, setReservedLockers] = React.useState([]);
   const [availableLockers, setAvailableLockers] = React.useState([]);
   const [pendingRequests, setPendingRequests] = React.useState([]);
+
+  useEffect(() => {
+    const subscription = supabase
+      .channel("table_db_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "reservations" },
+        (payload) => {
+          // Update your state or trigger a function to fetch updated data
+          fetchUpdatedLockerStats();
+          console.log("Change received: ", payload);
+        }
+      )
+      .subscribe();
+
+    // Clean up subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     const getLockerCodes = async () => {
@@ -33,6 +54,27 @@ const AdminDashboard = () => {
     };
     getLockerCodes();
   }, []);
+
+  const fetchUpdatedLockerStats = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API_URL}/available_lockers`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("failed to fetch lockers");
+      }
+      const lockers = await response.json();
+      setLockerCodes(lockers.data);
+    } catch (error) {
+      console.error("Error fetching lockers: ", error);
+    }
+  };
 
   const totalLockers = lockerCodes.length;
   useEffect(() => {

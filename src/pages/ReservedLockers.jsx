@@ -17,48 +17,42 @@ import { ArrowBackIos } from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router-dom";
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
+import { supabase } from "../supabaseClient";
 
 const ReservedLockers = () => {
   const [openModal, setOpenModal] = React.useState(false); // State for managing modal visibility
   const [lockerCodes, setLockerCodes] = React.useState([]);
   const [selectedLockerId, setSelectedLockerId] = React.useState(null);
-  const [data, setData] = React.useState(null); // where we will store the updated data
 
   const user = useSelector((state) => state.auth.user);
   // console.log(user);
   const user_id = user.id;
 
   useEffect(() => {
-    const socket = new WebSocket(
-      `${
-        import.meta.env.VITE_WEBSOCKET_API_URL
-      }/ws/update_reservations/${user_id}`
-    );
+    const subscription = supabase
+      .channel("table_db_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "reservations" },
+        (payload) => {
+          // Update your state or trigger a function to fetch updated data
+          fetchUpdatedLockers();
+          console.log("Change received: ", payload);
+        }
+      )
+      .subscribe();
 
-    socket.onopen = () => {
-      console.log("WebSocket connected");
-    };
-
-    socket.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      console.log("Received data:", message);
-      setData(message);
-    };
-
-    socket.onclose = () => {
-      console.log("WebSocket disconnected");
-    };
-
+    // Clean up subscription on unmount
     return () => {
-      socket.close();
+      subscription.unsubscribe();
     };
   }, []);
 
   const handleReservation = async (lockerCode, id) => {
     setSelectedLockerId(id); // Set the selected locker ID
     console.log(selectedLockerId);
-    setOpenModal(true); // Open the modal
     deleteReservaion(lockerCode);
+    setOpenModal(true); // Open the modal
     console.log(
       `Reserving locker with the locker code: ${lockerCode} with the id: ${id}`
     );
@@ -146,9 +140,8 @@ const ReservedLockers = () => {
     return rearrangedItems;
   };
 
-  const handleClose = async () => {
+  const handleClose = () => {
     setOpenModal(false); // Close the modal only when the source is the button
-    await fetchUpdatedLockers();
   };
 
   const fetchUpdatedLockers = async () => {
@@ -168,6 +161,7 @@ const ReservedLockers = () => {
       // Update state with updated locker codes
       const updatedLockers = await updatedResponse.json();
       setLockerCodes(updatedLockers.data);
+      setOpenModal(false);
     } catch (error) {
       console.error("Error fetching updated lockers", error);
     }
@@ -281,155 +275,136 @@ const ReservedLockers = () => {
                     </TableCell>
                   </TableRow>
                 </TableHead>
-                {data && (
-                  <TableBody
-                    sx={{
-                      width: "100%",
-                    }}
-                  >
-                    {getSearchedItems()
-                      .filter((item) => item.status === "Ongoing")
-                      .map((item) => (
-                        <TableRow
+                <TableBody
+                  sx={{
+                    width: "100%",
+                  }}
+                >
+                  {getSearchedItems()
+                    .filter((item) => item.status === "Ongoing")
+                    .map((item) => (
+                      <TableRow
+                        sx={{
+                          "&:last-child td, &:last-child th": { border: 0 },
+                        }}
+                        key={item.id}
+                      >
+                        <TableCell
                           sx={{
-                            "&:last-child td, &:last-child th": { border: 0 },
+                            fontSize: "1.25rem",
+                            fontWeight: 400,
+                            textAlign: "center",
                           }}
-                          key={item.id}
                         >
-                          <TableCell
+                          {item.locker_id.toString().padStart(3, "0")}
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            fontSize: "1.25rem",
+                            fontWeight: 600,
+                            color: "#041526",
+                            textAlign: "center",
+                          }}
+                        >
+                          {item.reservation_id}
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            fontSize: "1.25rem",
+                            fontWeight: 400,
+                            textAlign: "center",
+                          }}
+                        >
+                          <Button
+                            onClick={() =>
+                              handleReservation(
+                                item.locker_id.toString(),
+                                item.id
+                              )
+                            }
                             sx={{
-                              fontSize: "1.25rem",
-                              fontWeight: 400,
-                              textAlign: "center",
-                            }}
-                          >
-                            {item.locker_id.toString().padStart(3, "0")}
-                          </TableCell>
-                          <TableCell
-                            sx={{
-                              fontSize: "1.25rem",
+                              backgroundColor:
+                                location.pathname === "/pending"
+                                  ? "#0D5B00"
+                                  : "#DD0000",
+                              color: "#FFFFFF",
+                              fontSize: "1.29206rem",
                               fontWeight: 600,
-                              color: "#041526",
-                              textAlign: "center",
-                            }}
-                          >
-                            {item.reservation_id}
-                          </TableCell>
-                          <TableCell
-                            sx={{
-                              fontSize: "1.25rem",
-                              fontWeight: 400,
-                              textAlign: "center",
-                            }}
-                          >
-                            <Button
-                              onClick={() =>
-                                handleReservation(
-                                  item.locker_id.toString(),
-                                  item.id
-                                )
-                              }
-                              sx={{
+                              textTransform: "none",
+                              padding: ".2em 1em",
+                              borderRadius: "17px",
+                              "&:hover": {
                                 backgroundColor:
                                   location.pathname === "/pending"
                                     ? "#0D5B00"
                                     : "#DD0000",
-                                color: "#FFFFFF",
-                                fontSize: "1.29206rem",
-                                fontWeight: 600,
-                                textTransform: "none",
-                                padding: ".2em 1em",
-                                borderRadius: "17px",
-                                "&:hover": {
-                                  backgroundColor:
-                                    location.pathname === "/pending"
-                                      ? "#0D5B00"
-                                      : "#DD0000",
-                                },
+                              },
+                            }}
+                            disableRipple
+                          >
+                            {location.pathname === "/pending"
+                              ? "Confirm"
+                              : "Checkout"}
+                          </Button>
+                          <Modal open={openModal}>
+                            <Box
+                              sx={{
+                                position: "absolute",
+                                top: "50%",
+                                left: "50%",
+                                transform: "translate(-50%, -50%)",
+                                width: 700,
+                                bgcolor: "#040E18",
+                                boxShadow: 24,
+                                p: 4,
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                flexDirection: "column",
+                                borderRadius: "50px",
                               }}
-                              disableRipple
                             >
-                              {location.pathname === "/pending"
-                                ? "Confirm"
-                                : "Checkout"}
-                            </Button>
-                            <Modal
-                              open={openModal}
-                              onClose={() => setOpenModal(false)}
-                            >
-                              <Box
+                              <Typography
+                                variant="body2"
                                 sx={{
-                                  position: "absolute",
-                                  top: "50%",
-                                  left: "50%",
-                                  transform: "translate(-50%, -50%)",
-                                  width: 700,
-                                  bgcolor: "#040E18",
-                                  boxShadow: 24,
-                                  p: 4,
-                                  display: "flex",
-                                  justifyContent: "center",
-                                  alignItems: "center",
-                                  flexDirection: "column",
-                                  borderRadius: "50px",
+                                  color: "#fff",
+                                  fontSize: {
+                                    xs: "1rem",
+                                    sm: "1rem",
+                                    md: "1.25rem",
+                                  },
+                                  fontWeight: 400,
+                                  width: "55%",
+                                  textAlign: "center",
+                                  margin: ".5em 0",
                                 }}
                               >
-                                <Typography
-                                  variant="body2"
-                                  sx={{
-                                    color: "#fff",
-                                    fontSize: {
-                                      xs: "1rem",
-                                      sm: "1rem",
-                                      md: "1.25rem",
-                                    },
-                                    fontWeight: 400,
-                                    width: "55%",
-                                    textAlign: "center",
-                                    margin: ".5em 0",
-                                  }}
-                                >
-                                  You have checked out from your locker!
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  sx={{
-                                    color: "#fff",
-                                    fontSize: {
-                                      xs: "1rem",
-                                      sm: "1rem",
-                                      md: "1.25rem",
-                                    },
-                                    fontWeight: 500,
-                                    textAlign: "center",
-                                  }}
-                                >
-                                  Thank you for using our locker service
-                                </Typography>
-                                <Button
-                                  onClick={() => handleClose()}
-                                  sx={{
-                                    color: "#040E18",
-                                    backgroundColor: "#fff",
-                                    fontSize: "1.19906rem",
-                                    fontWeight: 600,
-                                    textTransform: "none",
-                                    padding: ".3em 6em",
-                                    borderRadius: "10px",
-                                    marginTop: "3em",
-                                    "&:hover": { backgroundColor: "#fff" },
-                                  }}
-                                  disableRipple
-                                >
-                                  Continue
-                                </Button>
-                              </Box>
-                            </Modal>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                )}
+                                Checkout successful
+                              </Typography>
+
+                              <Button
+                                onClick={() => handleClose()}
+                                sx={{
+                                  color: "#040E18",
+                                  backgroundColor: "#fff",
+                                  fontSize: "1.19906rem",
+                                  fontWeight: 600,
+                                  textTransform: "none",
+                                  padding: ".3em 6em",
+                                  borderRadius: "10px",
+                                  marginTop: "2em",
+                                  "&:hover": { backgroundColor: "#fff" },
+                                }}
+                                disableRipple
+                              >
+                                Continue
+                              </Button>
+                            </Box>
+                          </Modal>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
               </Table>
             </TableContainer>
           </Box>
